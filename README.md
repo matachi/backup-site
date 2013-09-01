@@ -13,17 +13,16 @@ downloaded to the directory backup.
 2. `mkdir backup && cd backup`
 3. `./../backuper.py`
 
-## Make a backup of a WordPress installation, including both files and
-database, on a shared host
+## Make a backup of a WordPress installation, including both files and database, on a shared host
 
-['WP Complete Backup'](http://wordpress.org/plugins/wp-complete-backup/) will
+[WP Complete Backup](http://wordpress.org/plugins/wp-complete-backup/) will
 make a database backup and save it in its plugin folder. Then will the complete
 file structure be downloaded over FTP, including WP Complete Backup's backup of
 the database. Not the prettiest solution, but it works fine if you are using a
 shared host.
 
-1. Install ['WP Complete
-   Backup'](http://wordpress.org/plugins/wp-complete-backup/) on your WordPress
+1. Install [WP Complete
+   Backup](http://wordpress.org/plugins/wp-complete-backup/) on your WordPress
 blog.
 2. Open the settings for WP Complete Backup, add your IP address and copy the
    API key.
