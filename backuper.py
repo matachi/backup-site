@@ -82,7 +82,7 @@ class AryaStarkFtp(FTP):
         urllib.request.urlopen(url)
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
 if config['backup'].getboolean('wp_complete_backup'):
     ftp = AryaStarkFtp(config['ftp']['host'], config['ftp']['username'],
