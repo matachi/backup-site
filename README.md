@@ -2,7 +2,7 @@
 
 Download a website's files over FTP and the SQL database's tables and rows.
 
-License: [GNU GPL version 3 or later](LICENSE)
+License: [MIT License](LICENSE)
 
 ## Make a backup of a site's files
 

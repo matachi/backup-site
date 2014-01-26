@@ -1,9 +1,11 @@
 <?php
 /**
- * Script that adds a basic API to extract MySQL table data for backup reason,
- * and later reconstruction of the database.
+ * Script that adds a basic API for exporting MySQL table data for backup
+ * reason, and later reconstruction of the database.
  *
  * @author Daniel "MaTachi" Jonsson
+ * @copyright 2014 Daniel "MaTachi" Jonsson
+ * @license MIT
  */
 
 // Authentication.
