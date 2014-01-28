@@ -46,6 +46,6 @@ Running this script will do the following things:
 1. Make a directory named sql.
 2. Create necessary files inside the directory for creating the tables and
    inserting the rows into the tables.
-3. Create a .tar.gz file of the sql directory with current date and time as
-   name filename.
+3. Create a .tar.gz file of the sql directory with the current date and time as
+   filename.
 4. Remove the directory sql.
