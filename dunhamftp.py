@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import configparser
 import os
@@ -83,14 +83,13 @@ def main():
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
-    if config['backup'].getboolean('ftp'):
-        ftp = DunhamFtp(config['ftp']['host'], config['ftp']['username'],
-                           config['ftp']['password'])
-        # Save all files in the FTP's root directory
-        os.mkdir('ftp')
-        os.chdir('ftp')
-        ftp.save_files_in_directory()
-        ftp.quit()
+    ftp = DunhamFtp(config['ftp']['host'], config['ftp']['username'],
+                    config['ftp']['password'])
+    # Save all files in the FTP's root directory into a child dir named `ftp`
+    os.mkdir('ftp')
+    os.chdir('ftp')
+    ftp.save_files_in_directory()
+    ftp.quit()
 
 if __name__ == '__main__':
     main()
