@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from concurrent import futures
 import configparser
 import os
