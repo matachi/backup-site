@@ -2,98 +2,95 @@
 
 import configparser
 import os
-import urllib.request
 from ftplib import FTP
 
-class AryaStarkFtp(FTP):
-    """Extend ftplib.FTP with some extra functionality."""
+
+class DunhamFtp(FTP):
+    """
+    Extend ftplib.FTP with some extra functionality.
+    """
 
     def get_file_list(self):
-        """Return a list of all files in the current folder."""
-        listing = []
-        self.retrlines('LIST', listing.append)
+        """
+        Return a list of all files in the current working directory.
+        """
+        files = []
+        self.retrlines('LIST', files.append)
         # Remove the files . and ..
-        listing = listing[2:]
-        # Make a list of dictionaries containing the file/folder name and a
-        # string that says if it's a file or a folder.
+        files = files[2:]
+        # Make a list of dictionaries containing the file/directory name and a
+        # boolean that says if it's a file or a directory.
         # .split(None, 8) is necessary so filenames containing spaces aren't
         # splitted.
-        listing = [{
-                       'name': x.split(None, 8)[-1],
-                       'dict': x[0] == 'd'
-                   }
-                   for x in listing]
-        return listing
+        files = [
+            {
+                'name': x.split(None, 8)[-1],
+                'dir': x[0] == 'd'
+            }
+            for x in files]
+        return files
 
-    def save_files_in_folder(self):
-        """Save all files in the current folder.
+    def save_files_in_directory(self):
+        """
+        Save all files in the current working directory (cwd).
 
         This method is using FTP's state and Python's working directory to keep
-        track of the current location when recursively traversing the trees."""
+        track of the current location when recursively traversing the trees.
+        """
         files = self.get_file_list()
         for f in files:
-            if f['dict']:
+            if f['dir']:
                 self.cwd(f['name'])
                 os.mkdir(f['name'])
                 os.chdir(f['name'])
-                self.save_files_in_folder()
+                self.save_files_in_directory()
                 self.cwd('..')
                 os.chdir('..')
             else:
                 self.save_file(f['name'])
-                pass
 
     def save_file(self, filename):
-        """Save the given file from FTP's cwd to Python's cwd."""
+        """
+        Save the given file from FTP's cwd to Python's cwd.
+        """
         with open(filename, 'wb') as f:
             self.retrbinary('RETR ' + filename, f.write)
 
-    def delete_folder(self, foldername=None):
-        """Delete all files in the specified folder or in the cwd on the
-        FTP."""
-        files = None
+    def remove_dir(self, dirname=None):
+        """
+        Delete all files in the specified directory or in the cwd on the
+        FTP, and the directory itself.
 
-        if foldername:
-            files = [{'name': foldername, 'dict': True}]
+        @type dirname: str
+        @param dirname: Name of the directory.
+        """
+        if dirname:
+            files = [{'name': dirname, 'dir': True}]
         else:
             files = self.get_file_list()
 
         for f in files:
-            if f['dict']:
+            if f['dir']:
                 self.cwd(f['name'])
-                self.delete_folder()
+                self.remove_dir()
                 self.cwd('..')
                 self.rmd(f['name'])
             else:
                 self.delete(f['name'])
-                pass
 
-    def delete_wp_complete_backups(self):
-        """Delete all backups made by WP Complete Backup."""
-        self.cwd('/wp-content/plugins/wp-complete-backup/storage')
-        files = self.get_file_list()
-        for f in files:
-            if f['dict']:
-                self.delete_folder(f['name'])
 
-    def make_wp_complete_backup(self, url):
-        """Query the remote execution URL, which will make a database
-        backup."""
-        urllib.request.urlopen(url)
+def main():
+    config = configparser.ConfigParser()
+    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
-config = configparser.ConfigParser()
-config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
+    if config['backup'].getboolean('ftp'):
+        ftp = DunhamFtp(config['ftp']['host'], config['ftp']['username'],
+                           config['ftp']['password'])
+        # Save all files in the FTP's root directory
+        os.mkdir('ftp')
+        os.chdir('ftp')
+        ftp.save_files_in_directory()
+        ftp.quit()
 
-if config['backup'].getboolean('wp_complete_backup'):
-    ftp = AryaStarkFtp(config['ftp']['host'], config['ftp']['username'],
-                       config['ftp']['password'])
-    if config['wp_complete_backup'].getboolean('delete_previous_backups'):
-        ftp.delete_wp_complete_backups()
-    ftp.make_wp_complete_backup(config['wp_complete_backup']['url'])
-    ftp.quit()
-
-if config['backup'].getboolean('ftp'):
-    ftp = AryaStarkFtp(config['ftp']['host'], config['ftp']['username'],
-                       config['ftp']['password'])
-    ftp.save_files_in_folder()
-    ftp.quit()
+if __name__ == '__main__':
+    main()
