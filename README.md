@@ -19,13 +19,13 @@ downloaded to the directory backup.
 
 First, generate an API key, for example with the following terminal command:
 
-   $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50; echo
+    $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50; echo
 
 Paste the key into <config.ini> under `[sqlexport]` at the setting `api_key`.
 
 Then, calculate the sha256 hash sum of the key, for example with:
 
-   $ echo -n APIKEY | sha256sum
+    $ echo -n APIKEY | sha256sum
 
 Paste the hashed key into <sqlexport.php>.where `$sha256_api_key` is set.
 
