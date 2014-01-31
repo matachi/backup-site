@@ -10,7 +10,13 @@ The site's complete file structure will with the instructions below be
 downloaded to the directory backup.
 
 1. Open [config.ini](config.ini) and add your FTP details.
-2. `$ ./dunhamftp.py`
+2. `$ ./fileexporter.py
+
+Run `$ ./fileexporter.py --help` to see examples and instructions on how to use
+the script.
+
+[Click here](#ftp_locally) to scroll down to the section where a guide on how
+to set up, run and test `fileexporter.py` locally.
 
 ## Make a backup of a site's SQL database on a shared host with PHP support
 
@@ -51,3 +57,34 @@ Running this script will do the following things:
 3. Create a .tar.gz file of the sql directory with the current date and time as
    filename.
 4. Remove the directory sql.
+
+## <a name="#ftp_locally"></a>Test FTP backup functionality locally
+
+Build Docker image:
+
+    $ sudo docker build -t backup-site/ftp .
+
+Start a new container:
+
+    $ sudo docker run -i -t -p 127.0.0.1:21:21 backup-site/ftp
+
+To connect to the FTP, run `$ ftp localhost` and login with the username `root`
+and password `pass`.
+
+To test the [fileexporter.py](fileexporter.py) script, run:
+
+    $ ./fileexporter.py -r /var/lib dpkg/alternatives pam
+
+This will download the files from within the directories
+`/var/lib/dpkg/alternatives/pam` and `/var/lib/pam` to a directory called
+`ftp`.
+
+If you are interested in only one directory:
+
+    $ ./fileexporter.py /var/lib/dpkg
+
+or:
+
+    $ ./fileexporter.py -r /var/lib/dpkg
+
+These two wi

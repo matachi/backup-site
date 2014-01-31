@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-import configparser
 import os
 from ftplib import FTP
 
@@ -8,14 +6,31 @@ from ftplib import FTP
 class DunhamFtp(FTP):
     """
     Extend ftplib.FTP with some extra functionality.
+
+    @author Daniel "MaTachi" Jonsson
+    @copyright Daniel "MaTachi" Jonsson
+    @license MIT License
     """
 
-    def get_file_list(self):
+    def get_file_list(self, directory):
         """
-        Return a list of all files in the current working directory.
+        Return a list of all files in `directory` or the current working
+        directory (cwd).
+
+        @type directory: str
+        @param directory: Path to a directory to list files from.
+        @rtype: list
+        @return: A list of dictionaries with the keys `path` to the str
+                 file/directory path and `dir` to the boolean if it's a
+                 directory.
         """
         files = []
-        self.retrlines('LIST', files.append)
+        if directory:
+            cmd = 'LIST {}'.format(directory)
+        else:
+            cmd = 'LIST'
+        self.retrlines(cmd, files.append)
+
         # Remove the files . and ..
         files = files[2:]
         # Make a list of dictionaries containing the file/directory name and a
@@ -24,37 +39,46 @@ class DunhamFtp(FTP):
         # splitted.
         files = [
             {
-                'name': x.split(None, 8)[-1],
-                'dir': x[0] == 'd'
+                'path': os.path.join(directory, f.split(None, 8)[-1]),
+                'dir': f[0] == 'd'
             }
-            for x in files]
+            for f in files]
         return files
 
-    def save_files_in_directory(self):
+    def save_files_in_directory(self, from_dir, to_dir):
         """
-        Save all files in the current working directory (cwd).
+        Save all files in `from_dir` and save them in `to_dir`.
 
-        This method is using FTP's state and Python's working directory to keep
-        track of the current location when recursively traversing the trees.
+        @type from_dir: str
+        @param from_dir: Directory on the FTP to save files from.
+        @type to_dir: str
+        @param to_dir: Local directory to save the files to.
         """
-        files = self.get_file_list()
+        files = self.get_file_list(from_dir)
+        os.makedirs(to_dir)
         for f in files:
             if f['dir']:
-                self.cwd(f['name'])
-                os.mkdir(f['name'])
-                os.chdir(f['name'])
-                self.save_files_in_directory()
-                self.cwd('..')
-                os.chdir('..')
+                new_from_dir = f['path']
+                new_to_dir = os.path.join(to_dir, os.path.basename(f['path']))
+                self.save_files_in_directory(new_from_dir, new_to_dir)
             else:
-                self.save_file(f['name'])
+                save_as = os.path.join(to_dir, os.path.basename(f['path']))
+                self.save_file(f['path'], save_as)
 
-    def save_file(self, filename):
+    def save_file(self, path, save_as):
         """
-        Save the given file from FTP's cwd to Python's cwd.
+        Save the file `path` from the FTP as `save_as` locally.
+
+        @type path: str
+        @param path: File path to a file on the FTP.
+        @type save_as: str
+        @param save_as: Local file path to save the file as.
         """
-        with open(filename, 'wb') as f:
-            self.retrbinary('RETR ' + filename, f.write)
+        save_as_dir = os.path.dirname(save_as)
+        if not os.path.exists(save_as_dir):
+            os.makedirs(save_as_dir)
+        with open(save_as, 'wb') as f:
+            self.retrbinary('RETR ' + path, f.write)
 
     def remove_dir(self, dirname=None):
         """
@@ -65,31 +89,15 @@ class DunhamFtp(FTP):
         @param dirname: Name of the directory.
         """
         if dirname:
-            files = [{'name': dirname, 'dir': True}]
+            files = [{'path': dirname, 'dir': True}]
         else:
             files = self.get_file_list()
 
         for f in files:
             if f['dir']:
-                self.cwd(f['name'])
+                self.cwd(f['path'])
                 self.remove_dir()
                 self.cwd('..')
-                self.rmd(f['name'])
+                self.rmd(f['path'])
             else:
-                self.delete(f['name'])
-
-
-def main():
-    config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
-
-    ftp = DunhamFtp(config['ftp']['host'], config['ftp']['username'],
-                    config['ftp']['password'])
-    # Save all files in the FTP's root directory into a child dir named `ftp`
-    os.mkdir('ftp')
-    os.chdir('ftp')
-    ftp.save_files_in_directory()
-    ftp.quit()
-
-if __name__ == '__main__':
-    main()
+                self.delete(f['path'])
