@@ -15,7 +15,8 @@ downloaded to the directory backup.
 Run `$ ./fileexporter.py --help` to see examples and instructions on how to use
 the script.
 
-[Click here](#ftp_locally) to scroll down to the section where a guide on how
+[Click here](#test-ftp-backup-functionality-locally) to scroll down to the
+section where a guide on how
 to set up, run and test `fileexporter.py` locally.
 
 ## Make a backup of a site's SQL database on a shared host with PHP support
@@ -58,7 +59,7 @@ Running this script will do the following things:
    filename.
 4. Remove the directory sql.
 
-## <a name="#ftp_locally"></a>Test FTP backup functionality locally
+## Test FTP backup functionality locally
 
 Build Docker image:
 
