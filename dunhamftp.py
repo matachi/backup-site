@@ -78,25 +78,3 @@ class DunhamFtp(FTP):
         print(save_as)
         with open(save_as, 'wb') as f:
             self.retrbinary('RETR ' + path, f.write)
-
-    def remove_dir(self, dirname=None):
-        """
-        Delete all files in the specified directory or in the cwd on the
-        FTP, and the directory itself.
-
-        @type dirname: str
-        @param dirname: Name of the directory.
-        """
-        if dirname:
-            files = [{'path': dirname, 'dir': True}]
-        else:
-            files = self.get_file_list()
-
-        for f in files:
-            if f['dir']:
-                self.cwd(f['path'])
-                self.remove_dir()
-                self.cwd('..')
-                self.rmd(f['path'])
-            else:
-                self.delete(f['path'])
