@@ -45,25 +45,22 @@ class DunhamFtp(FTP):
             for f in files]
         return files
 
-    def save_files_in_directory(self, from_dir, to_dir):
+    def get_files_in_directory(self, from_dir):
         """
-        Save all files in `from_dir` and save them in `to_dir`.
+        Get a list of all files in `from_dir` and its subdirectories.
 
         @type from_dir: str
-        @param from_dir: Directory on the FTP to save files from.
-        @type to_dir: str
-        @param to_dir: Local directory to save the files to.
+        @param from_dir: Directory on the FTP to get files from.
+        @return
         """
         files = self.get_file_list(from_dir)
-        os.makedirs(to_dir)
+        file_list = []
         for f in files:
             if f['dir']:
-                new_from_dir = f['path']
-                new_to_dir = os.path.join(to_dir, os.path.basename(f['path']))
-                self.save_files_in_directory(new_from_dir, new_to_dir)
+                file_list = file_list + self.get_files_in_directory(f['path'])
             else:
-                save_as = os.path.join(to_dir, os.path.basename(f['path']))
-                self.save_file(f['path'], save_as)
+                file_list.append(f['path'])
+        return file_list
 
     def save_file(self, path, save_as):
         """
@@ -77,6 +74,8 @@ class DunhamFtp(FTP):
         save_as_dir = os.path.dirname(save_as)
         if not os.path.exists(save_as_dir):
             os.makedirs(save_as_dir)
+
+        print(save_as)
         with open(save_as, 'wb') as f:
             self.retrbinary('RETR ' + path, f.write)
 
